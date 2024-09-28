@@ -1,0 +1,82 @@
+import openpyxl
+import string
+class Agenda:
+    def __init__(self, arquivo='Agenda Unb.xlsx'):
+        self.arquivo = arquivo
+        self.workbook = openpyxl.load_workbook(arquivo)
+        self.sheet = self.workbook['2° Semestre']
+
+        # Estrutura de dados para armazenar as matérias
+        self.horario = {
+            dia: {turno: [] for turno in 'mtN'} for dia in range(2, 8)
+        }
+
+    def adicionar_materia(self, codigo:str, materia):
+        # Validação básica do código
+        if not codigo.isalnum() or len(codigo) != 3:
+            raise ValueError("Código da matéria inválido")
+
+        dia = int(codigo[0])
+        turno = codigo[1]
+        horario_relativo = int(codigo[2])  # Horário relativo ao início do turno
+
+        coluna = string.ascii_uppercase[dia - 3 + 2] #Cálculo coluna da célula
+
+        # Cálculo da linha da célula
+        if turno == 'm':
+            linha = 2+horario_relativo
+        elif turno == 't':
+            linha = 6 + horario_relativo
+        elif turno == 'N':
+            linha = 10 + horario_relativo
+        else:
+            raise ValueError("Turno inválido")
+
+        # Escreve na planilha
+        celula = f'{coluna}{linha}'
+        self.sheet[celula] = materia
+        
+
+        # Adiciona à estrutura de dados na planilha
+        self.horario[dia][turno].append(codigo)
+
+        self.workbook.save(self.arquivo)
+
+    def remover_materia(self, codigo:str, materia):
+        # Validação básica do código
+        if not codigo.isalnum() or len(codigo) != 3:
+            raise ValueError("Código da matéria inválido")
+
+        dia = int(codigo[0])
+        turno = codigo[1]
+        horario_relativo = int(codigo[2])  # Horário relativo ao início do turno
+
+        coluna = string.ascii_uppercase[dia - 2 + 2] #Cálculo coluna da célula
+
+        # Cálculo da linha da célula
+        if turno == 'm':
+            linha = 2+horario_relativo
+        elif turno == 't':
+            linha = 6 + horario_relativo
+        elif turno == 'N':
+            linha = 10 + horario_relativo
+        else:
+            raise ValueError("Turno inválido")
+
+        # Deleta da planilha
+        celula = f'{coluna}{linha}'
+        self.sheet[celula] = None
+        
+
+        # Adiciona à estrutura de dados na planilha
+        self.horario[dia][turno].append(codigo)
+
+        self.workbook.save(self.arquivo)
+
+    
+
+agenda= Agenda()
+
+agenda.adicionar_materia("3m1","fisica")#Exemplo
+agenda.adicionar_materia("2m1","fisica")#Exemplo
+agenda.remover_materia("3m1","fisica")
